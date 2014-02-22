@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- meta -->
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        
+        <title> Sharing Map over XMPP/WS</title>
+        <link rel="stylesheet" href="theme/default/style.css" type="text/css">
+        <link rel="stylesheet" href="style.css" type="text/css">
+            
+    </head>
+
+    <body onload="initMap()">
+        <!-- header of body -->
+        <div id='body_header'>
+            <h1 id="title"> Sharing Map over XMPP/WS</h1>
+            <div id="tags">
+                Sharing, map, XMPP, websocket, UET, TOSHIBA LAB
+            </div>
+        </div>
+	   
+        <!-- body of body -->
+        <div id = "body_body">
+            <!-- controller -->
+            <div id = "left">
+                <div class="panel" id="controller">
+                          <button id="connectButton">Connect</button>
+                          <input type="text" id="username" placeholder="username">
+                          <input type="password" id="password" placeholder="password">
+                </div>
+             
+                <!-- 2 map views -->
+                <div id = "map_view">
+                    <p >Your map:</p>
+                	<div id="map" class="smallmap"></div>
+                    
+                    <p >Your partner's map:</p>
+                    <div id="pmap" class="smallmap"></div>
+                </div>
+            </div>
+
+            <!-- log -->
+            <div id = "right">
+                <h3>LOG:</h3>
+
+
+                <div id="output"></div>
+            </div>
+        </div>
+
+        <script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+        <script src="OpenLayers.js"></script>        
+        <script src="strophe.js"></script>
+        <script src="xmppMap.js"></script>
+		
+    </body>
+</html>
