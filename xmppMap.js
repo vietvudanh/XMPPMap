@@ -13,10 +13,6 @@ function connectHandler(cond) {
         // Determine the partner base on the username
         connection.send($pres());
         var username = document.getElementById("username").value;
-        if (username == "test1@myserver.com")
-	   	   partner = "test2@myserver.com";
-	    else
-	   	   partner = "test1@myserver.com";
     }
 }
 
@@ -24,10 +20,30 @@ var url = "ws://10.10.131.6:5280/";
 var connection = null;
 var partner;
 
-var connectButton = document.getElementById("connectButton");
-connectButton.onclick = function() {
-    var username = document.getElementById("username").value;
-    var password = document.getElementById("password").value;
+var connectButton1 = document.getElementById("connectButton1");
+var connectButton2 = document.getElementById("connectButton2");
+
+connectButton1.onclick = function() {
+    connectButton1.disabled =true;
+    connectButton2.style.visibility='hidden';
+    var username = "test1@myserver.com";
+    var password = "1";
+	partner= "test2@myserver.com";
+    connection = new Strophe.Connection({
+        proto : new Strophe.Websocket(url)
+    });
+    connection.connect(username, password, connectHandler);
+
+    // set up handlers
+    connection.addHandler(messageHandler, null, "message", "chat");
+    connection.addHandler(pingHandler, "urn:xmpp:ping", "iq", "get");
+}
+connectButton2.onclick = function() {
+    connectButton2.disabled =true;
+    connectButton1.style.visibility='hidden';
+    var username = "test2@myserver.com";
+    var password = "1";
+	partner = "test1@myserver.com";
     connection = new Strophe.Connection({
         proto : new Strophe.Websocket(url)
     });
