@@ -17,4 +17,4 @@ B3: Cài node-xmpp-bosh: https://github.com/dhruvbird/node-xmpp-bosh
 Hướng dẫn cụ thể xem ở https://github.com/dhruvbird/node-xmpp-bosh/blob/master/DEBIAN_HOW_TO.md
 
 ***Chú ý: sau khi cài xong bước 3. để chạy gateway thì chạy lệnh:
-node /.../runserver.js (file này trong gói node-xmpp-bosh mà mọi người tải xuống từ git)
+node /.../run-server.js (file này trong gói node-xmpp-bosh mà mọi người tải xuống từ git)
