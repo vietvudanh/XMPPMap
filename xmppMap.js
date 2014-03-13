@@ -16,10 +16,12 @@ function connectHandler(cond) {
     }
 }
 
+// connection
 var url = "ws://10.10.131.6:5280/";
 var connection = null;
 var partner;
 
+// buttons
 var connectButton1 = document.getElementById("connectButton1");
 var connectButton2 = document.getElementById("connectButton2");
 
@@ -38,6 +40,7 @@ connectButton1.onclick = function() {
     connection.addHandler(messageHandler, null, "message", "chat");
     connection.addHandler(pingHandler, "urn:xmpp:ping", "iq", "get");
 }
+
 connectButton2.onclick = function() {
     connectButton2.disabled =true;
     connectButton1.style.visibility='hidden';
