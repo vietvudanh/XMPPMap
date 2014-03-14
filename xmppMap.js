@@ -25,6 +25,14 @@ var partner;
 var connectButton1 = document.getElementById("connectButton1");
 var connectButton2 = document.getElementById("connectButton2");
 
+// marker state
+var isMarked;
+var markerLonLat
+
+//projection
+var WGS1984Projection = new OpenLayers.Projection("EPSG:4326"); // WGS 1984
+var SMProjection = new OpenLayers.Projection("EPSG:900913"); // Spherical Mercator Projection
+
 connectButton1.onclick = function() {
     connectButton1.disabled =true;
     connectButton2.style.visibility='hidden';
@@ -39,6 +47,7 @@ connectButton1.onclick = function() {
     // set up handlers
     connection.addHandler(messageHandler, null, "message", "chat");
     connection.addHandler(pingHandler, "urn:xmpp:ping", "iq", "get");
+    connection.addHandler(markerHandler, null, 'message', 'marker');
 }
 
 connectButton2.onclick = function() {
@@ -55,6 +64,7 @@ connectButton2.onclick = function() {
     // set up handlers
     connection.addHandler(messageHandler, null, "message", "chat");
     connection.addHandler(pingHandler, "urn:xmpp:ping", "iq", "get");
+    connection.addHandler(markerHandler, null, 'message', 'marker');
 }
 
 function messageHandler(message) {
@@ -92,8 +102,38 @@ function pingHandler(ping) {
     // indicate that this handler should be called repeatedly
     return true;
 }
+
+function markerHandler(message){
+    log("RECEIVED marker");
+    // Receive the message
+    var from = message.getAttribute("from");
+    var body = "";
+    Strophe.forEachChild(message, "body", function(elem) {
+        body = elem.textContent;
+    });
+
+    var pMarkerLon=parseFloat(body.split(' ')[0], 10);
+    var pMarkerLat=parseFloat(body.split(' ')[1], 10);
+    var pMarkerLonLat = new OpenLayers.LonLat(pMarkerLon,pMarkerLat);
+    
+    log("Your partner marked at " + pMarkerLonLat);
+    pmapMarkers.clearMarkers();
+    pmapMarkers.addMarker(new OpenLayers.Marker(pMarkerLonLat));
+
+    if(isMarked){
+        log("BOTH MARKED! Distance between two marked points: " + distance(pMarkerLonLat));
+    }
+
+    return true;
+    
+}
+
 var map;//own map
 var pmap//partner map
+
+// markers
+var mapMarkers;
+var pmapMarkers;
 	
 function initMap() {
 	//Initialize the maps
@@ -112,6 +152,36 @@ function initMap() {
     // Add the layers to the maps
     map.addLayers([osm]);
     pmap.addLayers([posm]);
+
+    //Markers
+    mapMarkers = new OpenLayers.Layer.Markers( "mapMarkers" );
+    map.addLayer(mapMarkers);
+    pmapMarkers = new OpenLayers.Layer.Markers( "pmapMarkers" );
+    pmap.addLayer(pmapMarkers);
+
+    isMarked = false;
+
+    map.events.register("click", map, function(e) {
+        //var position = this.events.getMousePosition(e);
+        var position = map.getLonLatFromPixel(e.xy);
+        markerLonLat = new OpenLayers.LonLat(position.lon,position.lat);
+        var size = new OpenLayers.Size(21,25);
+        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+        var icon = new OpenLayers.Icon('images/mark.png', size, offset);   
+
+        mapMarkers.clearMarkers();
+        mapMarkers.addMarker(new OpenLayers.Marker(position));
+
+        isMarked = true;
+
+        var message = $msg({
+            to : partner,
+            type : "marker"
+        }).c("body").t(markerLonLat.lon + " " + markerLonLat.lat);
+        connection.send(message);
+        log("Send mark: "+markerLonLat.lon + " " + markerLonLat.lat);
+
+    });
 
     // Add listener
     map.zoomToMaxExtent();
@@ -136,7 +206,21 @@ function handleEndMove(e){
 	var message = $msg({
 	    to : partner,
 	    type : "chat"
-	}).c("body").t(Longitude+' '+Latitude+' '+zoom);
+	}).c("body").t(Longitude+' '+Latitude+' '+zoom+" ");
 	connection.send(message);
 	log("Send latitude, longitue, zoom: "+Latitude+" "+Longitude+" "+zoom);
 } 
+
+// calculate distance
+function distance(pMarkerLonLat){
+
+    var transformLonLat1 = markerLonLat.transform(SMProjection, WGS1984Projection);
+    var transformLonLat2 = pMarkerLonLat.transform(SMProjection, WGS1984Projection);
+    var R = 6371; // Radius of the earth in km
+    var dLat = (transformLonLat2.lat - transformLonLat1.lat) * Math.PI / 180;  // deg2rad below
+    var dLon = (transformLonLat2.lon - transformLonLat1.lon) * Math.PI / 180;
+    var a = 0.5 - Math.cos(dLat)/2 + Math.cos(transformLonLat1.lat * Math.PI / 180) * Math.cos(transformLonLat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+
+    return R * 2 * Math.asin(Math.sqrt(a));
+
+}
