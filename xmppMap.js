@@ -34,6 +34,11 @@ var pMarkerLonLat;
 var WGS1984Projection = new OpenLayers.Projection("EPSG:4326"); // WGS 1984
 var SMProjection = new OpenLayers.Projection("EPSG:900913"); // Spherical Mercator Projection
 
+function showDistance(){
+    if (isMarked&&pisMarked)
+        log("Distance between two marked points: " + distance(pMarkerLonLat) + " m");
+}
+
 connectButton1.onclick = function() {
     connectButton1.disabled =true;
     connectButton2.style.visibility='hidden';
@@ -119,10 +124,8 @@ function markerHandler(message){
     log("Your partner marked at " + pMarkerLonLat);
     pmapMarkers.clearMarkers();
     pmapMarkers.addMarker(new OpenLayers.Marker(pMarkerLonLat));
-
-    if(isMarked){
-        log("BOTH MARKED! Distance between two marked points: " + distance(pMarkerLonLat) + " km");
-    }
+    pisMarked = true;
+    showDistance();
 
     return true;
     
@@ -160,27 +163,29 @@ function initMap() {
     pmap.addLayer(pmapMarkers);
 
     isMarked = false;
-
+    pisMarked = false;
     map.events.register("click", map, function(e) {
         //var position = this.events.getMousePosition(e);
-        var position = map.getLonLatFromPixel(e.xy);
-        markerLonLat = new OpenLayers.LonLat(position.lon,position.lat);
-        var size = new OpenLayers.Size(21,25);
-        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-        var icon = new OpenLayers.Icon('images/mark.png', size, offset);   
+	if (checkConnection()){
+            var position = map.getLonLatFromPixel(e.xy);
+            markerLonLat = new OpenLayers.LonLat(position.lon,position.lat);
+            var size = new OpenLayers.Size(21,25);
+            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+            var icon = new OpenLayers.Icon('images/mark.png', size, offset);   
 
-        mapMarkers.clearMarkers();
-        mapMarkers.addMarker(new OpenLayers.Marker(position));
+            mapMarkers.clearMarkers();
+            mapMarkers.addMarker(new OpenLayers.Marker(position));
 
-        isMarked = true;
+            isMarked = true;
 
-        var message = $msg({
-            to : partner,
-            type : "marker"
-        }).c("body").t(markerLonLat.lon + " " + markerLonLat.lat);
-        connection.send(message);
-        log("Send mark: "+markerLonLat.lon + " " + markerLonLat.lat);
-
+            var message = $msg({
+                to : partner,
+                type : "marker"
+            }).c("body").t(markerLonLat.lon + " " + markerLonLat.lat);
+            connection.send(message);
+            log("Send mark: "+markerLonLat.lon + " " + markerLonLat.lat);
+	    showDistance();
+	}
     });
 
     // Add listener
@@ -189,42 +194,43 @@ function initMap() {
     map.events.register('moveend', map, handleEndMove);
     
 }
+function checkConnection(){
+	if (connection==null){
+		alert("Connection error! Please log in or check you connection!");
+        	return false;        
+	}
+	return true;
 
+}
 function handleEndMove(e){
 	// Set the map at the initial status if no connection established
-	if (connection==null){
-		map.setCenter(new OpenLayers.LonLat(0,78271.516953249),1,false,false);
-		alert("Connection error! Please log in or check you connection!");
-	}
-	//Get information of change 
-	var lonlat=map.getCenter();
+	if (checkConnection()){
+        	//Get information of change 
+		var lonlat=map.getCenter();
 
-	Longitude = lonlat.lon
-	Latitude  = lonlat.lat
-	zoom = map.getZoom()
-	//Send information over XMPP to partner
-	var message = $msg({
-	    to : partner,
-	    type : "chat"
-	}).c("body").t(Longitude+' '+Latitude+' '+zoom+" ");
-	connection.send(message);
-	log("Send latitude, longitue, zoom: "+Latitude+" "+Longitude+" "+zoom);
+		Longitude = lonlat.lon
+		Latitude  = lonlat.lat
+		zoom = map.getZoom()
+		//Send information over XMPP to partner
+		var message = $msg({
+		    to : partner,
+		    type : "chat"
+		}).c("body").t(Longitude+' '+Latitude+' '+zoom+" ");
+	
+		connection.send(message);
+		log("Send latitude, longitue, zoom: "+Latitude+" "+Longitude+" "+zoom);
+	}
 } 
 
 // calculate distance
 function distance(pMarkerLonLat){
 
-    var transformLonLat1 = markerLonLat.transform(SMProjection, WGS1984Projection);
-    var transformLonLat2 = pMarkerLonLat.transform(SMProjection, WGS1984Projection);
-    log("PARTNER" + transformLonLat1 + " MINE " + transformLonLat2);
+	var Geographic  = new OpenLayers.Projection("EPSG:4326"); 
+	var Mercator = new OpenLayers.Projection("EPSG:900913");
 
-    var R = 6371; // Radius of the earth in km
-    var dLat = (transformLonLat2.lat - transformLonLat1.lat) * Math.PI / 180;  // deg2rad below
-    var dLon = (transformLonLat2.lon - transformLonLat1.lon) * Math.PI / 180;
-    log(dLat + ";" + dLon + ";" + Math.PI);
-    var a = 0.5 - Math.cos(dLat)/2 + Math.cos(transformLonLat1.lat * Math.PI / 180) * Math.cos(transformLonLat2.lat * Math.PI / 180) * (1 - Math.cos(dLon))/2;
-    log("a="+a);
-    var d = R * 2 * Math.asin(Math.sqrt(a));
-    return d;
+        var point1 = new OpenLayers.Geometry.Point(pMarkerLonLat.lon, pMarkerLonLat.lat);
+        var point2 = new OpenLayers.Geometry.Point(markerLonLat.lon, markerLonLat.lat);
 
+        return point1.distanceTo(point2);
 }
+
