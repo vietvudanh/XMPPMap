@@ -27,7 +27,8 @@ var connectButton2 = document.getElementById("connectButton2");
 
 // marker state
 var isMarked;
-var markerLonLat
+var markerLonLat;
+var pMarkerLonLat;
 
 //projection
 var WGS1984Projection = new OpenLayers.Projection("EPSG:4326"); // WGS 1984
@@ -104,7 +105,6 @@ function pingHandler(ping) {
 }
 
 function markerHandler(message){
-    log("RECEIVED marker");
     // Receive the message
     var from = message.getAttribute("from");
     var body = "";
@@ -114,14 +114,14 @@ function markerHandler(message){
 
     var pMarkerLon=parseFloat(body.split(' ')[0], 10);
     var pMarkerLat=parseFloat(body.split(' ')[1], 10);
-    var pMarkerLonLat = new OpenLayers.LonLat(pMarkerLon,pMarkerLat);
+    pMarkerLonLat = new OpenLayers.LonLat(pMarkerLon,pMarkerLat);
     
     log("Your partner marked at " + pMarkerLonLat);
     pmapMarkers.clearMarkers();
     pmapMarkers.addMarker(new OpenLayers.Marker(pMarkerLonLat));
 
     if(isMarked){
-        log("BOTH MARKED! Distance between two marked points: " + distance(pMarkerLonLat));
+        log("BOTH MARKED! Distance between two marked points: " + distance(pMarkerLonLat) + " km");
     }
 
     return true;
@@ -216,11 +216,15 @@ function distance(pMarkerLonLat){
 
     var transformLonLat1 = markerLonLat.transform(SMProjection, WGS1984Projection);
     var transformLonLat2 = pMarkerLonLat.transform(SMProjection, WGS1984Projection);
+    log("PARTNER" + transformLonLat1 + " MINE " + transformLonLat2);
+
     var R = 6371; // Radius of the earth in km
     var dLat = (transformLonLat2.lat - transformLonLat1.lat) * Math.PI / 180;  // deg2rad below
     var dLon = (transformLonLat2.lon - transformLonLat1.lon) * Math.PI / 180;
-    var a = 0.5 - Math.cos(dLat)/2 + Math.cos(transformLonLat1.lat * Math.PI / 180) * Math.cos(transformLonLat2 * Math.PI / 180) * (1 - Math.cos(dLon))/2;
-
-    return R * 2 * Math.asin(Math.sqrt(a));
+    log(dLat + ";" + dLon + ";" + Math.PI);
+    var a = 0.5 - Math.cos(dLat)/2 + Math.cos(transformLonLat1.lat * Math.PI / 180) * Math.cos(transformLonLat2.lat * Math.PI / 180) * (1 - Math.cos(dLon))/2;
+    log("a="+a);
+    var d = R * 2 * Math.asin(Math.sqrt(a));
+    return d;
 
 }
