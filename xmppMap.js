@@ -17,9 +17,16 @@ function connectHandler(cond) {
 }
 
 // connection
-var url = "ws://10.10.131.6:5280/";
+// var url = "ws://10.10.131.6:5280/";
+var url = "ws://192.168.6.128:5280/";
 var connection = null;
 var partner;
+
+// users
+var user1 = 'user1@localhost';
+var user2 = 'user2@localhost';
+var password1 = 'abc123';
+var password2 = 'abc123';
 
 // buttons
 var connectButton1 = document.getElementById("connectButton1");
@@ -42,13 +49,11 @@ function showDistance(){
 connectButton1.onclick = function() {
     connectButton1.disabled =true;
     connectButton2.style.visibility='hidden';
-    var username = "test1@myserver.com";
-    var password = "1";
-	partner= "test2@myserver.com";
+	partner= user2;
     connection = new Strophe.Connection({
         proto : new Strophe.Websocket(url)
     });
-    connection.connect(username, password, connectHandler);
+    connection.connect(user1, password1, connectHandler);
 
     // set up handlers
     connection.addHandler(messageHandler, null, "message", "chat");
@@ -59,13 +64,11 @@ connectButton1.onclick = function() {
 connectButton2.onclick = function() {
     connectButton2.disabled =true;
     connectButton1.style.visibility='hidden';
-    var username = "test2@myserver.com";
-    var password = "1";
-	partner = "test1@myserver.com";
+	partner = user1;
     connection = new Strophe.Connection({
         proto : new Strophe.Websocket(url)
     });
-    connection.connect(username, password, connectHandler);
+    connection.connect(user2, password2, connectHandler);
 
     // set up handlers
     connection.addHandler(messageHandler, null, "message", "chat");
@@ -167,23 +170,23 @@ function initMap() {
     map.events.register("click", map, function(e) {
         //var position = this.events.getMousePosition(e);
 	if (checkConnection()){
-            var position = map.getLonLatFromPixel(e.xy);
-            markerLonLat = new OpenLayers.LonLat(position.lon,position.lat);
-            var size = new OpenLayers.Size(21,25);
-            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-            var icon = new OpenLayers.Icon('images/mark.png', size, offset);   
+        var position = map.getLonLatFromPixel(e.xy);
+        markerLonLat = new OpenLayers.LonLat(position.lon,position.lat);
+        var size = new OpenLayers.Size(21,25);
+        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+        var icon = new OpenLayers.Icon('images/mark.png', size, offset);   
 
-            mapMarkers.clearMarkers();
-            mapMarkers.addMarker(new OpenLayers.Marker(position));
+        mapMarkers.clearMarkers();
+        mapMarkers.addMarker(new OpenLayers.Marker(position));
 
-            isMarked = true;
+        isMarked = true;
 
-            var message = $msg({
-                to : partner,
-                type : "marker"
-            }).c("body").t(markerLonLat.lon + " " + markerLonLat.lat);
-            connection.send(message);
-            log("Send mark: "+markerLonLat.lon + " " + markerLonLat.lat);
+        var message = $msg({
+            to : partner,
+            type : "marker"
+        }).c("body").t(markerLonLat.lon + " " + markerLonLat.lat);
+        connection.send(message);
+        log("Send mark: "+markerLonLat.lon + " " + markerLonLat.lat);
 	    showDistance();
 	}
     });
@@ -228,9 +231,9 @@ function distance(pMarkerLonLat){
 	var Geographic  = new OpenLayers.Projection("EPSG:4326"); 
 	var Mercator = new OpenLayers.Projection("EPSG:900913");
 
-        var point1 = new OpenLayers.Geometry.Point(pMarkerLonLat.lon, pMarkerLonLat.lat);
-        var point2 = new OpenLayers.Geometry.Point(markerLonLat.lon, markerLonLat.lat);
+    var point1 = new OpenLayers.Geometry.Point(pMarkerLonLat.lon, pMarkerLonLat.lat);
+    var point2 = new OpenLayers.Geometry.Point(markerLonLat.lon, markerLonLat.lat);
 
-        return point1.distanceTo(point2);
+    return point1.distanceTo(point2);
 }
 
