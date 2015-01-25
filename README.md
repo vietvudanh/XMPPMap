@@ -49,5 +49,7 @@ Tham khảo hướng dẫn tại [đây](http://askubuntu.com/questions/49390/ho
 
 Tham khảo ở [đây](https://github.com/dhruvbird/node-xmpp-bosh/blob/master/DEBIAN_HOW_TO.md)
 
-***Chú ý: sau khi cài xong bước 4. để chạy gateway thì chạy lệnh:
+***Chú ý: 
+1. Sau khi cài xong bước 4. để chạy gateway thì chạy lệnh:
 node /.../run-server.js (file này trong gói node-xmpp-bosh đã tải xuống từ git)
+2. Trước khi chạy chương trình, cần thay đổi địa chỉ sv XMPP tại file xmppMap.js
