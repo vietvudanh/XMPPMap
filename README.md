@@ -1,20 +1,53 @@
-XMPPMap
-=======
+# XMPPMap
 
 XMPPmap demo for ToshibaLab phase07(Mid 2013-Mid 2014)
 
-System installation instruction
--------------------------------
+## Phần mềm yêu cầu
 
-[Hướng dẫn cài] Server XMPP hỗ trợ websocket (ubuntu).
+    1. ejabberd
+    2. nodejs
+    3. build-essential(Ubuntu)
+    4. [node-xmpp-bosh](https://github.com/dhruvbird/node-xmpp-bosh)
 
-B1: Cài ejabberd (cái này khỏi phải nói nữa) config cổng 5280 thành 1 cổng khác (5281) trong file /etc/../ejabberd.cfg
+## Hướng dẫn cài đặt
 
-B2: Cài notejs phiên bản mới nhất: Tham khảo http://askubuntu.com/questions/49390/how-do-i-install-the-latest-version-of-node-js
+### 3. Cài ejabberd
 
-B3: Cài node-xmpp-bosh: https://github.com/dhruvbird/node-xmpp-bosh
+1. Tham khảo cài đặt tại [Đây](https://www.digitalocean.com/community/tutorials/how-to-install-ejabberd-xmpp-server-on-ubuntu)
 
-Hướng dẫn cụ thể xem ở https://github.com/dhruvbird/node-xmpp-bosh/blob/master/DEBIAN_HOW_TO.md
+2. Thêm 2 user:
 
-***Chú ý: sau khi cài xong bước 3. để chạy gateway thì chạy lệnh:
-node /.../run-server.js (file này trong gói node-xmpp-bosh mà mọi người tải xuống từ git)
+		user: user1; password: abc123
+		user: user2; password: abc123
+
+3. Config cổng 5280 thành 1 cổng khác (5281) trong file /etc/../ejabberd.cfg. Tại:
+
+		%5280
+		  {5280, ejabberd_http, [
+			     %%{request_handlers,
+			     %% [
+			     %%  {["pub", "archive"], mod_http_fileserver}
+			     %% ]},
+			     %%captcha,
+			     http_bind,
+			     http_poll,
+			     web_admin
+			    ]}
+		 ]}.
+
+4. restart ejabberd
+
+### 2. Cài build-essential
+
+    apt-get install build-essential
+
+### 3. Cài nodejs
+
+Tham khảo hướng dẫn tại [đây](http://askubuntu.com/questions/49390/how-do-i-install-the-latest-version-of-node-js)
+
+### 4. Cài đặt xmpp-node-bosh
+
+Tham khảo ở [đây](https://github.com/dhruvbird/node-xmpp-bosh/blob/master/DEBIAN_HOW_TO.md)
+
+***Chú ý: sau khi cài xong bước 4. để chạy gateway thì chạy lệnh:
+node /.../run-server.js (file này trong gói node-xmpp-bosh đã tải xuống từ git)
