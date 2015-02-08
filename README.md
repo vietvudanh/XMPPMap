@@ -2,6 +2,10 @@
 
 XMPPmap demo for ToshibaLab phase07(Mid 2013-Mid 2014)
 
+## Cấu trúc hệ thống
+
+Hệ thống gồm có: 1. Web server; 2. XMPP Server. Các truy vấn và dữ liệu tĩnh, bản đồ sẽ dược webserver quản lý. Các truy vấn và phản hồi cơ bản được web server xử lý. Sự tương tác giữa các client được gửi thông qua các thông điệp do XMPP server quản lý.
+
 ## Phần mềm yêu cầu
 
     1. ejabberd
@@ -11,7 +15,7 @@ XMPPmap demo for ToshibaLab phase07(Mid 2013-Mid 2014)
 
 ## Hướng dẫn cài đặt
 
-### 3. Cài ejabberd
+### 1. Cài ejabberd
 
 1. Tham khảo cài đặt tại [Đây](https://www.digitalocean.com/community/tutorials/how-to-install-ejabberd-xmpp-server-on-ubuntu)
 
